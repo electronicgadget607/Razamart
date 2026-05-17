@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="site-title">Raza Online Store (ROS) | Quality Gadgets</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        #fixed-background-poster {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background-image: url('https://i.postimg.cc/rFJ34kSs/Round-Photo-May122026-090335.png');
+            background-repeat: no-repeat; background-position: center; background-size: 50%;
+            opacity: 0.05; z-index: -999; pointer-events: none;
+        }
+        #product-detail-page, #checkout-form-section, #auth-page, #admin-panel, #cart-modal, #thankyou-page { display: none; }
+        #login-modal { display: none; }
+
+        /* AUTH PAGE STYLES */
+        #auth-page {
+            position: fixed; inset: 0; z-index: 9999;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+            overflow-y: auto;
+        }
+        .auth-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.12);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .auth-input {
+            width: 100%; background: rgba(255,255,255,0.07);
+            border: 1.5px solid rgba(255,255,255,0.15);
+            border-radius: 12px; padding: 13px 16px;
+            color: #fff; font-size: 14px; outline: none;
+            transition: border-color 0.25s;
+        }
+        .auth-input::placeholder { color: rgba(255,255,255,0.35); }
+        .auth-input:focus { border-color: #3b82f6; }
+        .auth-label { color: rgba(255,255,255,0.6); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; display: block; }
+        .auth-btn-primary {
+            width: 100%; background: #2563eb;
+            color: #fff; font-weight: 800; font-size: 15px;
+            padding: 14px; border-radius: 14px; border: none;
+            cursor: pointer; transition: background 0.2s, transform 0.1s;
+            letter-spacing: 0.03em;
+        }
+        .auth-btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
+        .auth-step { display: none; }
+        .auth-step.active { display: block; }
+        .step-indicator span {
+            width: 32px; height: 32px; border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 800; border: 2px solid rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.4); transition: all 0.3s;
+        }
+        .step-indicator span.done { background: #22c55e; border-color: #22c55e; color: #fff; }
+        .step-indicator span.active { background: #2563eb; border-color: #2563eb; color: #fff; }
+        /* CHANGE 5: Fixed bottom bar hidden by default — shown only on detail page */
+        #detail-fixed-bottom-bar { display: none; }
+        .thumbnail.active { border-color: #2563eb; opacity: 1; }
+        .thumbnail { cursor: pointer; opacity: 0.6; transition: 0.3s; }
+        
+        /* Floating WhatsApp Button Style */
+        @keyframes wa-float {
+            0%, 100% { transform: translateY(0px); box-shadow: 2px 4px 14px rgba(0,0,0,0.25); }
+            50%       { transform: translateY(-7px); box-shadow: 2px 10px 20px rgba(0,0,0,0.18); }
+        }
+        .whatsapp-float {
+            position: fixed; bottom: 24px; right: 24px;
+            background-color: #25d366; color: white;
+            width: 60px; height: 60px; border-radius: 50%;
+            display: flex; items-center: center; justify-content: center;
+            font-size: 30px; box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+            z-index: 100; transition: transform 0.3s;
+            animation: wa-float 3s ease-in-out infinite;
+        }
+        .whatsapp-float:hover { transform: scale(1.12) translateY(0); animation-play-state: paused; color: white; }
+
+        /* ===== WELCOME TICKER BANNER ===== */
+        #welcome-ticker-wrap {
+            background: linear-gradient(90deg, #1e3a5f 0%, #2563eb 50%, #1e3a5f 100%);
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 10px 0;
+            position: relative;
+            border-bottom: 2px solid rgba(255,255,255,0.15);
+            box-shadow: 0 2px 12px rgba(37,99,235,0.18);
+        }
+        #welcome-ticker-wrap::before,
+        #welcome-ticker-wrap::after {
+            content: '';
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 60px;
+            z-index: 2;
+            pointer-events: none;
+        }
+        #welcome-ticker-wrap::before { left: 0; background: linear-gradient(to right, #1e3a5f, transparent); }
+        #welcome-ticker-wrap::after  { right: 0; background: linear-gradient(to left, #1e3a5f, transparent); }
+        #welcome-ticker-track {
+            display: inline-block;
+            animation: tickerScroll 28s linear infinite;
+            will-change: transform;
+        }
+        #welcome-ticker-track:hover { animation-play-state: paused; }
+        @keyframes tickerScroll {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .ticker-item {
+            display: inline-block;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            padding: 0 32px;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            direction: rtl;
+            unicode-bidi: embed;
+        }
+        .ticker-sep {
+            display: inline-block;
+            color: rgba(255,255,255,0.35);
+            padding: 0 6px;
+            font-size: 16px;
+        }
+
+        /* ===== CUSTOM SIZE SLIDERS ===== */
+        .size-control-wrap { display: flex; flex-direction: column; gap: 6px; }
+        .size-slider-row { display: flex; align-items: center; gap: 8px; }
+        .size-slider-row input[type=range] { flex: 1; accent-color: #8b5cf6; cursor: pointer; }
+        .size-num-input {
+            width: 64px; background: #1f2937; border: 1px solid #4b5563;
+            border-radius: 8px; padding: 4px 6px; color: #fff;
+            font-size: 12px; text-align: center; outline: none;
+        }
+        .size-num-input:focus { border-color: #8b5cf6; }
+        .size-preview-label { font-size: 11px; color: #9ca3af; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-900">
+
+    <div id="fixed-background-poster"></div>
+
+    <a id="fixed-whatsapp-link" href="https://wa.me/923277228234" target="_blank" class="whatsapp-float flex items-center justify-center">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <div id="main-store">
+        <header class="bg-white shadow-sm sticky top-0 z-40">
+            <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <img id="nav-logo-img" src="https://i.postimg.cc/rFJ34kSs/Round-Photo-May122026-090335.png" alt="Logo" class="w-10 h-10 rounded-full border-2 border-blue-600">
+                    <h1 id="nav-store-name" class="text-2xl font-bold text-blue-600">ROS</h1>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button id="auth-btn" onclick="openLoginModal()" class="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition text-sm font-bold shadow-md">
+                        <i class="fas fa-user mr-1"></i> Login
+                    </button>
+                    <button onclick="toggleCart()" class="relative bg-gray-100 p-2.5 rounded-full text-gray-600 hover:bg-gray-200 transition shadow-sm">
+                        <i class="fas fa-shopping-cart text-lg"></i>
+                        <span id="cart-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
+                    </button>
+                </div>
+            </nav>
+        </header>
+
+        <!-- ===== ANIMATED WELCOME TICKER ===== -->
+        <div id="welcome-ticker-wrap">
+            <div id="welcome-ticker-track">
+                <!-- items rendered by JS, doubled for seamless loop -->
+            </div>
+        </div>
+
+        <section class="bg-white border-b py-6 px-6">
+            <div class="container mx-auto max-w-4xl flex flex-col sm:flex-row gap-3 items-center">
+                <input type="text" id="searchInput" onkeyup="filterProducts()" placeholder="Search gadgets..." class="w-full p-3 rounded-xl border-2 border-gray-100 outline-none focus:border-blue-500 shadow-sm">
+                
+                <!-- CHANGE 1: Compact square filter button instead of full-width row -->
+                <div class="relative flex-shrink-0 text-left">
+                    <button onclick="toggleFilterDropdown()" title="Filter by Category" class="bg-gray-100 border-2 border-gray-200 text-gray-700 w-12 h-12 rounded-xl font-bold flex items-center justify-center hover:bg-blue-50 hover:border-blue-400 transition shadow-sm relative">
+                        <i class="fas fa-filter text-blue-600 text-base"></i>
+                        <span id="active-filter-dot" class="hidden absolute -top-1 -right-1 w-3 h-3 bg-blue-600 rounded-full border-2 border-white"></span>
+                    </button>
+                    <div id="filter-dropdown-menu" class="hidden absolute right-0 mt-2 w-52 bg-white border border-gray-100 rounded-xl shadow-xl z-50 py-1 max-h-60 overflow-y-auto no-scrollbar">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Admin-controlled banner image (hidden by default) -->
+        <div id="store-banner-section" class="hidden">
+            <img id="store-banner-img" src="" alt="Store Banner" class="w-full object-cover max-h-52 md:max-h-72">
+        </div>
+
+        <section class="container mx-auto px-4 py-12">
+            <div id="loading" class="text-center py-10"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto"></div></div>
+            <div id="product-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8"></div>
+        </section>
+    </div>
+
+    <!-- CHANGE 2-5: Product Detail Page — redesigned with thumbnail gallery, buy now + qty next to image,
+         description below, GIF slot in description, and fixed bottom Buy Now bar -->
+    <div id="product-detail-page" class="min-h-screen bg-white pb-28 py-6">
+        <div class="container mx-auto px-4 max-w-5xl">
+            <button onclick="backToStore()" class="mb-6 text-gray-600 font-bold flex items-center hover:text-blue-600">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Store
+            </button>
+
+            <!-- Top Section: Image gallery + Quick action row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+
+                <!-- Left: Main image + thumbnails -->
+                <div>
+                    <!-- CHANGE 3: Main product image (medium size) -->
+                    <div class="rounded-2xl overflow-hidden border bg-gray-50 shadow-sm mb-3">
+                        <img id="main-view-img" src="" class="w-full h-72 object-contain mx-auto transition-all duration-300">
+                    </div>
+                    <!-- CHANGE 3: Thumbnails below main image — click to replace main image -->
+                    <div id="thumbnail-container" class="flex gap-2 overflow-x-auto pb-2 no-scrollbar"></div>
+                </div>
+
+                <!-- Right: Name, price, qty, compact Buy Now — CHANGE 4 -->
+                <div class="flex flex-col justify-start gap-4">
+                    <h2 id="detail-name" class="text-2xl font-bold text-gray-800 leading-snug"></h2>
+                    <div class="text-3xl font-black text-blue-600">Rs. <span id="detail-price"></span></div>
+
+                    <!-- CHANGE 4: Quantity Selector + compact Buy Now button side by side -->
+                    <div class="bg-gray-50 p-4 rounded-xl">
+                        <h4 class="text-xs font-bold text-gray-500 uppercase mb-3 tracking-widest">Select Quantity</h4>
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <div class="flex items-center bg-white rounded-xl border-2 border-gray-200">
+                                <button onclick="updateQty(-1)" class="px-4 py-2 text-2xl font-bold text-blue-600 hover:bg-blue-50 rounded-l-xl transition">-</button>
+                                <span id="qty-display" class="px-5 py-2 font-bold border-x-2 text-xl min-w-[3rem] text-center">1</span>
+                                <button onclick="updateQty(1)" class="px-4 py-2 text-2xl font-bold text-blue-600 hover:bg-blue-50 rounded-r-xl transition">+</button>
+                            </div>
+                            <!-- CHANGE 4: Compact Buy Now button next to qty -->
+                            <button onclick="goToCheckoutForm()" class="flex-1 bg-blue-600 text-white py-3 px-4 rounded-xl font-black text-sm shadow-lg hover:bg-blue-700 transition whitespace-nowrap">
+                                <i class="fas fa-bolt mr-1"></i> BUY NOW
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Total estimate -->
+                    <div class="flex justify-between items-center px-3 bg-blue-50 rounded-xl py-3">
+                        <span class="text-gray-500 font-bold uppercase text-xs">Total Estimate</span>
+                        <span class="text-xl font-black text-gray-900">Rs. <span id="detail-total-bill"></span></span>
+                    </div>
+
+                    <!-- Add to cart -->
+                    <button onclick="addToCartCurrent()" class="w-full bg-orange-500 text-white py-3 rounded-xl font-black text-base shadow-lg hover:bg-orange-600 transition">
+                        <i class="fas fa-cart-plus mr-2"></i> ADD TO CART
+                    </button>
+                </div>
+            </div>
+
+            <!-- CHANGE 5: Description section below image gallery, with optional GIF slot controlled by admin -->
+            <div class="bg-white border rounded-2xl p-6 shadow-sm mb-6">
+                <h4 class="font-bold text-gray-800 text-lg mb-4 border-b pb-2">
+                    <i class="fas fa-info-circle text-blue-500 mr-2"></i>Product Description
+                </h4>
+                <!-- CHANGE 5: Admin-inserted animated GIF/image appears here if set; hidden if not set -->
+                <div id="detail-desc-gif-wrapper" class="hidden mb-5 flex justify-center">
+                    <img id="detail-desc-gif" src="" alt="Product animated image" class="max-w-full rounded-xl shadow-md max-h-64 object-contain mx-auto">
+                </div>
+                <p id="detail-desc" class="text-gray-600 leading-relaxed text-sm"></p>
+            </div>
+        </div>
+
+        <!-- CHANGE 5 & 6: Fixed sticky bottom Buy Now bar — pinned at bottom as user scrolls -->
+        <div id="detail-fixed-bottom-bar" class="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-blue-100 shadow-2xl z-40 px-4 py-3">
+            <div class="container mx-auto max-w-5xl flex items-center justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                    <p id="fixed-bar-name" class="font-black text-gray-800 text-sm truncate"></p>
+                    <p class="text-blue-600 font-bold text-sm">Rs. <span id="fixed-bar-price"></span></p>
+                </div>
+                <!-- CHANGE 6: Fixed bottom Buy Now also navigates to order form -->
+                <button onclick="goToCheckoutForm()" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-black text-base shadow-lg hover:bg-blue-700 transition flex-shrink-0">
+                    <i class="fas fa-bolt mr-1"></i> BUY NOW
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="checkout-form-section" class="min-h-screen bg-gray-100 py-8 px-4">
+        <div class="max-w-xl mx-auto">
+            <button onclick="backToDetails()" class="mb-4 text-blue-600 font-bold flex items-center">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Product
+            </button>
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border-t-8 border-blue-600">
+                <div class="p-8">
+                    <h2 class="text-2xl font-black text-gray-800 mb-6 text-center uppercase tracking-tight">Delivery Details</h2>
+                    <form id="finalOrderForm" class="space-y-5">
+                        <!-- CHANGE 7: Urdu helper text added under each field -->
+                        <div>
+                            <label class="block text-xs font-black text-gray-500 mb-2 uppercase">Full Customer Name</label>
+                            <input type="text" id="custName" required placeholder="Enter name here..." class="w-full bg-gray-50 border-2 border-gray-100 rounded-xl p-4 focus:border-blue-500 outline-none transition">
+                            <p class="text-xs text-gray-400 mt-1.5 text-right font-medium" dir="rtl">اپنا پورا نام یہاں درج کریں</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-black text-gray-500 mb-2 uppercase">WhatsApp / Phone Number</label>
+                            <input type="tel" id="custPhone" required placeholder="03xxxxxxxxx" class="w-full bg-gray-50 border-2 border-gray-100 rounded-xl p-4 focus:border-blue-500 outline-none transition">
+                            <!-- CHANGE 7: Urdu helper text for phone -->
+                            <p class="text-xs text-gray-400 mt-1.5 text-right font-medium" dir="rtl">رابطے کے لیے فعال موبائل نمبر لکھیں</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-black text-gray-500 mb-2 uppercase">City</label>
+                            <input type="text" id="custCity" required placeholder="e.g. Lahore, Karachi, Islamabad..." class="w-full bg-gray-50 border-2 border-gray-100 rounded-xl p-4 focus:border-blue-500 outline-none transition">
+                            <p class="text-xs text-gray-400 mt-1.5 text-right font-medium" dir="rtl">اپنا شہر درج کریں</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-black text-gray-500 mb-2 uppercase">Complete Shipping Address</label>
+                            <textarea id="custAddress" required placeholder="House#, Street, Area, City..." class="w-full bg-gray-50 border-2 border-gray-100 rounded-xl p-4 focus:border-blue-500 outline-none h-28 transition"></textarea>
+                            <!-- CHANGE 7: Urdu helper text for address -->
+                            <p class="text-xs text-gray-400 mt-1.5 text-right font-medium" dir="rtl">مکمل پتہ گلی اور مکان نمبر کے ساتھ لکھیں تاکہ آرڈر بروقت پہنچ سکے</p>
+                        </div>
+                        
+                        <div class="bg-blue-50 p-4 rounded-xl flex justify-between items-center">
+                            <span class="text-blue-800 font-bold" id="final-summary-text"></span>
+                            <span class="text-xl font-black text-blue-900">Rs. <span id="final-summary-price"></span></span>
+                        </div>
+
+                        <button type="submit" id="submitBtn" class="w-full bg-green-500 text-white py-5 rounded-2xl font-black text-xl hover:bg-green-600 shadow-lg transition">
+                            CONFIRM ORDER NOW
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="cart-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
+        <div class="bg-white w-full max-w-md h-full p-6 flex flex-col shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-4 mb-4">
+                <h3 class="text-xl font-black text-gray-800"><i class="fas fa-shopping-cart text-blue-600 mr-2"></i> Your Cart</h3>
+                <button onclick="toggleCart()" class="text-gray-500 hover:text-red-500 text-xl font-bold">&times;</button>
+            </div>
+            <div id="cart-items-container" class="flex-1 overflow-y-auto space-y-4 pr-1"></div>
+            <div class="border-t pt-4 mt-4">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="font-bold text-gray-600">Total Cart Amount:</span>
+                    <span class="text-2xl font-black text-blue-600">Rs. <span id="cart-total-price">0</span></span>
+                </div>
+                <button onclick="checkoutCart()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition">
+                    Checkout From Cart
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FULL PAGE AUTH SYSTEM -->
+    <div id="auth-page">
+        <div class="min-h-screen flex items-center justify-center p-4 py-12">
+            <div class="w-full max-w-md">
+                <!-- Logo/Brand -->
+                <div class="text-center mb-8">
+                    <img id="auth-logo" src="https://i.postimg.cc/rFJ34kSs/Round-Photo-May122026-090335.png" alt="Logo" class="w-16 h-16 rounded-full border-2 border-blue-500 mx-auto mb-3 shadow-xl">
+                    <h1 id="auth-brand-name" class="text-2xl font-black text-white">ROS</h1>
+                    <p class="text-blue-300 text-sm mt-1">Raza Online Store</p>
+                </div>
+
+                <!-- Auth Card -->
+                <div class="auth-card rounded-3xl p-8 shadow-2xl">
+
+                    <!-- LOGIN VIEW -->
+                    <div id="auth-login-view">
+                        <h2 class="text-2xl font-black text-white mb-1">Welcome Back</h2>
+                        <p class="text-sm text-blue-200 mb-6">Sign in to your account</p>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="auth-label">Email or Mobile Number</label>
+                                <input type="text" id="loginIdentifier" autocomplete="username" placeholder="email@example.com or 03xxxxxxx" class="auth-input">
+                            </div>
+                            <div>
+                                <label class="auth-label">Password</label>
+                                <div class="relative">
+                                    <input type="password" id="loginPass" autocomplete="current-password" placeholder="••••••••" class="auth-input" style="padding-right:44px;">
+                                    <button type="button" onclick="togglePassVis('loginPass', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-white opacity-40 hover:opacity-80 transition text-sm"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center text-xs pt-1">
+                                <button onclick="switchToSignup()" class="text-blue-400 font-bold hover:text-blue-300 transition">Don't have an account? Sign Up</button>
+                                <button onclick="handleForgotPassword()" class="text-red-400 font-bold hover:text-red-300 transition">Forgot Password?</button>
+                            </div>
+                            <button onclick="handleLoginSubmit()" class="auth-btn-primary mt-2">
+                                <i class="fas fa-sign-in-alt mr-2"></i> Login
+                            </button>
+                        </div>
+                        <button onclick="closeAuthPage()" class="w-full text-center text-xs text-white opacity-30 hover:opacity-60 transition mt-5 block">← Back to Store</button>
+                    </div>
+
+                    <!-- SIGNUP VIEW (multi-step) -->
+                    <div id="auth-signup-view" style="display:none;">
+                        <div class="flex items-center justify-between mb-5">
+                            <div>
+                                <h2 class="text-2xl font-black text-white mb-0.5">Create Account</h2>
+                                <p class="text-xs text-blue-200" id="signup-step-label">Step 1 of 3</p>
+                            </div>
+                            <!-- Step indicators -->
+                            <div class="step-indicator flex gap-2">
+                                <span id="si-1" class="active">1</span>
+                                <span id="si-2">2</span>
+                                <span id="si-3">3</span>
+                            </div>
+                        </div>
+
+                        <!-- Step 1: Identity -->
+                        <div class="auth-step active" id="signup-step-1">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="auth-label">Email, Mobile Number, or Username</label>
+                                    <input type="text" id="su-identifier" placeholder="Enter your Email, Mobile Number, or Username" class="auth-input">
+                                </div>
+                                <button onclick="signupNext(1)" class="auth-btn-primary mt-2">Continue <i class="fas fa-arrow-right ml-1"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Password -->
+                        <div class="auth-step" id="signup-step-2">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="auth-label">Password</label>
+                                    <div class="relative">
+                                        <input type="password" id="su-password" placeholder="••••••••" class="auth-input" style="padding-right:44px;">
+                                        <button type="button" onclick="togglePassVis('su-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-white opacity-40 hover:opacity-80 transition text-sm"><i class="fas fa-eye"></i></button>
+                                    </div>
+                                    <p class="mt-3 text-right text-xs leading-relaxed" dir="rtl" style="color:rgba(255,255,255,0.45); font-family:'Segoe UI',sans-serif; line-height:1.9;">
+                                        پاس ورڈ کم از کم ۶ حروف کا ہونا ضروری ہے۔<br>کوئی مشکل پاس ورڈ استعمال کریں تاکہ اکاؤنٹ محفوظ رہے۔
+                                    </p>
+                                </div>
+                                <div class="flex gap-3 pt-2">
+                                    <button onclick="signupBack(2)" class="flex-1 py-3 rounded-xl font-bold text-sm text-white border border-white border-opacity-20 hover:bg-white hover:bg-opacity-10 transition"><i class="fas fa-arrow-left mr-1"></i> Back</button>
+                                    <button onclick="signupNext(2)" class="flex-1 auth-btn-primary" style="width:auto;">Continue <i class="fas fa-arrow-right ml-1"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Personal Info -->
+                        <div class="auth-step" id="signup-step-3">
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="auth-label">First Name</label>
+                                        <input type="text" id="su-firstname" placeholder="Ali" class="auth-input">
+                                    </div>
+                                    <div>
+                                        <label class="auth-label">Last Name</label>
+                                        <input type="text" id="su-lastname" placeholder="Khan" class="auth-input">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="auth-label">Date of Birth</label>
+                                    <input type="date" id="su-dob" class="auth-input">
+                                </div>
+                                <div class="flex gap-3 pt-2">
+                                    <button onclick="signupBack(3)" class="flex-1 py-3 rounded-xl font-bold text-sm text-white border border-white border-opacity-20 hover:bg-white hover:bg-opacity-10 transition"><i class="fas fa-arrow-left mr-1"></i> Back</button>
+                                    <button onclick="handleSignupFinal()" class="flex-1 auth-btn-primary" style="width:auto;"><i class="fas fa-user-plus mr-1"></i> Sign Up</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="switchToLogin()" class="w-full text-center text-xs text-blue-400 hover:text-blue-300 transition mt-5 block font-bold">Already have an account? Sign In</button>
+                        <button onclick="closeAuthPage()" class="w-full text-center text-xs text-white opacity-30 hover:opacity-60 transition mt-2 block">← Back to Store</button>
+                    </div>
+
+                    <!-- SUCCESS VIEW -->
+                    <div id="auth-success-view" style="display:none; text-align:center;">
+                        <div class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl">
+                            <i class="fas fa-check text-white text-3xl"></i>
+                        </div>
+                        <h2 class="text-2xl font-black text-white mb-2">Account Created!</h2>
+                        <p id="auth-success-msg" class="text-green-300 text-sm mb-6">Welcome to ROS! You are now logged in.</p>
+                        <button onclick="closeAuthPage()" class="auth-btn-primary" style="background:#22c55e;">
+                            <i class="fas fa-shopping-bag mr-2"></i> Start Shopping
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Legacy login-modal kept hidden (referenced by some JS functions) -->
+    <div id="login-modal" style="display:none;"></div>
+
+    <div id="admin-panel" class="bg-gray-800 text-white py-8 px-6 mt-10 border-t-8 border-yellow-500">
+        <div class="container mx-auto max-w-4xl">
+            <div class="flex justify-between items-center border-b border-gray-700 pb-4 mb-6">
+                <h3 class="text-2xl font-black text-yellow-400"><i class="fas fa-user-shield mr-2"></i> Admin Settings Panel</h3>
+                <button onclick="logoutAdmin()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-lg font-bold text-xs transition">Logout Admin</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-gray-900 p-5 rounded-2xl space-y-4 border border-gray-700">
+                    <h4 class="font-bold text-blue-400 border-b border-gray-700 pb-2">Store Profile Customizer</h4>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Store Name Title</label>
+                        <input type="text" id="adminStoreName" value="ROS" class="w-full bg-gray-800 p-2.5 rounded-lg text-white border border-gray-700 outline-none focus:border-blue-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Logo Image URL</label>
+                        <input type="text" id="adminLogoUrl" value="https://i.postimg.cc/rFJ34kSs/Round-Photo-May122026-090335.png" class="w-full bg-gray-800 p-2.5 rounded-lg text-white border border-gray-700 outline-none focus:border-blue-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Website Title (Browser Tab)</label>
+                        <input type="text" id="adminSiteTitle" value="Raza Online Store (ROS) | Quality Gadgets" class="w-full bg-gray-800 p-2.5 rounded-lg text-white border border-gray-700 outline-none focus:border-blue-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Banner / Featured Image URL</label>
+                        <input type="text" id="adminBannerUrl" placeholder="Paste banner image URL here (optional)..." class="w-full bg-gray-800 p-2.5 rounded-lg text-white border border-gray-700 outline-none focus:border-blue-500 text-sm">
+                        <p class="text-xs text-gray-600 mt-1">If set, displays a banner below the search bar.</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">WhatsApp Sourcing Phone Number</label>
+                        <input type="text" id="adminWhatsapp" value="03277228234" class="w-full bg-gray-800 p-2.5 rounded-lg text-white border border-gray-700 outline-none focus:border-blue-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Fixed Poster Background Image URL</label>
+                        <input type="text" id="adminBgUrl" value="https://i.postimg.cc/rFJ34kSs/Round-Photo-May122026-090335.png" class="w-full bg-gray-800 p-2.5 rounded-lg text-white border border-gray-700 outline-none focus:border-blue-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Background Image Opacity — <span id="adminBgOpacityVal">0.05</span></label>
+                        <input type="range" id="adminBgOpacity" min="0.01" max="1" step="0.01" value="0.05"
+                            oninput="document.getElementById('adminBgOpacityVal').innerText=this.value; document.getElementById('fixed-background-poster').style.opacity=this.value;"
+                            class="w-full accent-blue-500 cursor-pointer">
+                        <div class="flex justify-between text-xs text-gray-600 mt-0.5"><span>Subtle (0.01)</span><span>Full (1.0)</span></div>
+                    </div>
+                    <!-- LOGO SIZE CONTROL -->
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Logo Image Size (px)</label>
+                        <div class="size-control-wrap">
+                            <div class="size-slider-row">
+                                <input type="range" id="adminLogoSizeSlider" min="20" max="120" step="2" value="40"
+                                    oninput="syncSizeControl('adminLogoSizeSlider','adminLogoSizeNum'); applyLogoSizeLive();">
+                                <input type="number" id="adminLogoSizeNum" class="size-num-input" min="20" max="120" step="2" value="40"
+                                    oninput="syncSizeControl('adminLogoSizeNum','adminLogoSizeSlider'); applyLogoSizeLive();">
+                                <span class="size-preview-label">px</span>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-600"><span>20px</span><span>120px</span></div>
+                        </div>
+                    </div>
+                    <!-- BACKGROUND IMAGE SIZE CONTROL -->
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Background Poster Size (%) — <span id="adminBgSizeVal">50</span>%</label>
+                        <div class="size-control-wrap">
+                            <div class="size-slider-row">
+                                <input type="range" id="adminBgSizeSlider" min="10" max="200" step="5" value="50"
+                                    oninput="syncSizeControl('adminBgSizeSlider','adminBgSizeNum'); applyBgSizeLive();">
+                                <input type="number" id="adminBgSizeNum" class="size-num-input" min="10" max="200" step="5" value="50"
+                                    oninput="syncSizeControl('adminBgSizeNum','adminBgSizeSlider'); applyBgSizeLive();">
+                                <span class="size-preview-label">%</span>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-600"><span>10%</span><span>200%</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Change Admin Password</label>
+                        <input type="password" id="adminNewPass" placeholder="Enter new admin password..." class="w-full bg-gray-800 p-2.5 rounded-lg text-white border border-gray-700 outline-none focus:border-blue-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Footer Content / Text</label>
+                        <textarea id="adminFooterText" rows="2" placeholder="Edit footer copyright or info text..." class="w-full bg-gray-800 p-2.5 rounded-lg text-white border border-gray-700 outline-none focus:border-blue-500 text-sm resize-none">© 2026 ROS - All Rights Reserved</textarea>
+                    </div>
+
+                    <!-- LAYOUT CONTROLS -->
+                    <div class="border border-gray-700 rounded-xl p-3">
+                        <h5 class="text-xs font-bold text-purple-400 mb-3 uppercase tracking-wider">Product Layout Controls</h5>
+                        <div class="grid grid-cols-2 gap-2 mb-3">
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">Layout Mode</label>
+                                <select id="adminProductLayout" class="w-full bg-gray-800 p-2 rounded-lg text-white border border-gray-700 outline-none focus:border-purple-500 text-sm">
+                                    <option value="grid">Grid (Columns)</option>
+                                    <option value="list">Rows (List View)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">Grid Columns</label>
+                                <select id="adminGridCols" class="w-full bg-gray-800 p-2 rounded-lg text-white border border-gray-700 outline-none focus:border-purple-500 text-sm">
+                                    <option value="2">2 Columns</option>
+                                    <option value="3">3 Columns</option>
+                                    <option value="4" selected>4 Columns</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                        <div>
+                                <label class="block text-xs text-gray-400 mb-1">Product Image Size</label>
+                                <div class="size-control-wrap">
+                                    <div class="size-slider-row">
+                                        <input type="range" id="adminImgSizeSlider" min="80" max="400" step="4" value="176"
+                                            oninput="syncSizeControl('adminImgSizeSlider','adminImgSizeNum'); applyImgSizeLive();">
+                                        <input type="number" id="adminImgSizeNum" class="size-num-input" min="80" max="400" step="4" value="176"
+                                            oninput="syncSizeControl('adminImgSizeNum','adminImgSizeSlider'); applyImgSizeLive();">
+                                        <span class="size-preview-label">px</span>
+                                    </div>
+                                    <div class="flex justify-between text-xs text-gray-600"><span>80px</span><span>400px</span></div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">Category Layout</label>
+                                <select id="adminCatLayout" class="w-full bg-gray-800 p-2 rounded-lg text-white border border-gray-700 outline-none focus:border-purple-500 text-sm">
+                                    <option value="grid" selected>Grid / Dropdown</option>
+                                    <option value="row">Row (Horizontal Pills)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="applyStoreSettings()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl font-bold text-sm transition">Apply Branding Updates</button>
+                </div>
+
+                <div class="bg-gray-900 p-5 rounded-2xl space-y-4 border border-gray-700">
+                    <h4 class="font-bold text-green-400 border-b border-gray-700 pb-2">Quick Live Product Editor</h4>
+                    <p class="text-xs text-gray-400">Select any active product from the store to load its live text fields here for immediate fast adjustments.</p>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Modify Selected Title</label>
+                        <input type="text" id="editProdName" class="w-full bg-gray-800 p-2.5 rounded-lg text-white border border-gray-700 outline-none focus:border-green-500 text-sm">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Price (Rs.)</label>
+                            <input type="number" id="editProdPrice" class="w-full bg-gray-800 p-2.5 rounded-lg text-white border border-gray-700 outline-none focus:border-green-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Category Group</label>
+                            <input type="text" id="editProdCat" class="w-full bg-gray-800 p-2.5 rounded-lg text-white border border-gray-700 outline-none focus:border-green-500 text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Display Image Cover URL</label>
+                        <input type="text" id="editProdImg" class="w-full bg-gray-800 p-2.5 rounded-lg text-white border border-gray-700 outline-none focus:border-green-500 text-sm">
+                    </div>
+                    <!-- CHANGE 5: Admin can insert a GIF/Animated Image URL for the product description -->
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1 flex items-center gap-1">
+                            <span class="text-yellow-400">&#9654;</span> Description GIF / Animated Image URL
+                        </label>
+                        <input type="text" id="editProdDescGif" placeholder="Paste GIF or image URL here (optional)..." class="w-full bg-gray-800 p-2.5 rounded-lg text-white border border-gray-700 outline-none focus:border-yellow-500 text-sm">
+                        <p class="text-xs text-gray-500 mt-1">Leave blank to hide. If set, this image/GIF will appear at the top of the product description on the detail page.</p>
+                    </div>
+                    <button onclick="saveProductEdits()" class="w-full bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-xl font-bold text-sm transition">Save Live Overrides</button>
+                </div>
+            </div>
+
+            <!-- TASK 3: Safe Page Content Controls -->
+            <div class="bg-gray-900 p-5 rounded-2xl border border-gray-700 mt-6">
+                <h4 class="font-bold text-orange-400 border-b border-gray-700 pb-2 mb-4">Page Content Controls</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Product Detail Page -->
+                    <div class="space-y-3">
+                        <h5 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Product Detail Page</h5>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Description Section Heading</label>
+                            <input type="text" id="adminDetailHeading" value="Product Description" placeholder="Product Description"
+                                class="w-full bg-gray-800 p-2.5 rounded-lg text-white border border-gray-700 outline-none focus:border-orange-400 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Quantity Selector Label</label>
+                            <input type="text" id="adminQtyLabel" value="Select Quantity" placeholder="Select Quantity"
+                                class="w-full bg-gray-800 p-2.5 rounded-lg text-white border border-gray-700 outline-none focus:border-orange-400 text-sm">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" id="adminHideBottomBar" class="accent-orange-400" onchange="document.getElementById('detail-fixed-bottom-bar').style.display = this.checked ? 'none' : '';">
+                            <label class="text-xs text-gray-400">Hide Fixed Bottom Buy Bar</label>
+                        </div>
+                    </div>
+                    <!-- Order Form -->
+                    <div class="space-y-3">
+                        <h5 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Order Form</h5>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Form Main Heading</label>
+                            <input type="text" id="adminFormHeading" value="Delivery Details" placeholder="Delivery Details"
+                                class="w-full bg-gray-800 p-2.5 rounded-lg text-white border border-gray-700 outline-none focus:border-orange-400 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Submit Button Text</label>
+                            <input type="text" id="adminSubmitBtnText" value="CONFIRM ORDER NOW" placeholder="CONFIRM ORDER NOW"
+                                class="w-full bg-gray-800 p-2.5 rounded-lg text-white border border-gray-700 outline-none focus:border-orange-400 text-sm">
+                        </div>
+                    </div>
+                </div>
+                <button onclick="applyPageContentSettings()" class="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white py-2.5 rounded-xl font-bold text-sm transition">Apply Content Changes</button>
+            </div>
+
+            <!-- WELCOME TICKER ADMIN CONTROL -->
+            <div class="bg-gray-900 p-5 rounded-2xl border border-gray-700 mt-6">
+                <h4 class="font-bold text-pink-400 border-b border-gray-700 pb-2 mb-4">
+                    <i class="fas fa-scroll mr-2"></i>Welcome Text (Animated Banner)
+                </h4>
+                <p class="text-xs text-gray-400 mb-3">ہر لائن الگ کریں یا | سے جدا کریں۔ خالی چھوڑیں تو ڈیفالٹ اردو متن نظر آئے گا۔</p>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Welcome Text (Urdu) — one line per entry or separate with |</label>
+                    <textarea id="adminWelcomeText" rows="6" dir="rtl"
+                        placeholder="ہمارے سٹور پر خوش آمدید ❤️&#10;آپ کا اعتماد ہماری پہچان ہے 🤝&#10;بہترین کوالٹی، مناسب قیمت 💎"
+                        class="w-full bg-gray-800 p-2.5 rounded-lg text-white border border-gray-700 outline-none focus:border-pink-500 text-sm resize-none font-medium leading-relaxed"></textarea>
+                </div>
+                <button onclick="saveWelcomeText()" class="mt-3 w-full bg-pink-600 hover:bg-pink-700 text-white py-2.5 rounded-xl font-bold text-sm transition">
+                    <i class="fas fa-save mr-1"></i> Save & Apply Welcome Text
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer id="main-footer" class="bg-gray-900 text-white py-12 px-6 text-center border-t border-gray-800">
+        <div class="container mx-auto max-w-xl mb-8">
+            <h5 class="text-lg font-bold mb-2 text-white uppercase tracking-wider">Subscribe to Updates</h5>
+            <p class="text-gray-400 text-sm mb-4">Get notifications of our latest tech gadget drops directly in your email.</p>
+            <div class="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
+                <input type="email" id="subscriberEmail" placeholder="Enter your email address..." class="flex-1 bg-gray-800 text-white border border-gray-700 px-4 py-3 rounded-xl outline-none focus:border-blue-500 text-sm">
+                <button onclick="handleSubscriptionSecure()" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition text-sm whitespace-nowrap shadow-md">Subscribe</button>
+            </div>
+        </div>
+        
+        <h4 id="footer-store-name" class="text-xl font-bold mb-4 text-blue-400">Raza Online Store</h4>
+        <p>WhatsApp: <span id="footer-whatsapp" class="text-green-400 font-bold">03277228234</span></p>
+        <p class="text-gray-500 text-xs mt-8">© 2026 ROS - All Rights Reserved</p>
+    </footer>
+
+    <!-- CHANGE 8: Professional Urdu Thank You / Order Confirmation Page -->
+    <div id="thankyou-page" style="display:none;" class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-10 px-4">
+        <div class="max-w-lg mx-auto">
+
+            <!-- Success animation header -->
+            <div class="text-center mb-8">
+                <div class="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl">
+                    <i class="fas fa-check text-white text-4xl"></i>
+                </div>
+                <h1 class="text-3xl font-black text-gray-800 mb-1">شکریہ!</h1>
+                <p class="text-green-600 font-bold text-lg">Order Confirmed</p>
+            </div>
+
+            <!-- Urdu trust message card -->
+            <div class="bg-white rounded-3xl shadow-xl p-6 mb-6 border border-green-100">
+                <div class="flex items-start gap-3 mb-4">
+                    <i class="fas fa-shield-alt text-green-500 text-2xl mt-1 flex-shrink-0"></i>
+                    <p class="text-gray-700 leading-loose text-base font-medium text-right" dir="rtl" style="font-family: 'Segoe UI', sans-serif; line-height: 2;">
+                        آپ کا آرڈر کامیابی کے ساتھ موصول ہو چکا ہے۔ ہماری ٹیم جلد ہی آپ سے رابطہ کرے گی۔ ہم پر اعتماد کرنے کا بے حد شکریہ!
+                    </p>
+                </div>
+            </div>
+
+            <!-- Order History Table -->
+            <div class="bg-white rounded-3xl shadow-xl overflow-hidden mb-6 border border-gray-100">
+                <div class="bg-blue-600 px-6 py-4">
+                    <h3 class="text-white font-black text-lg flex items-center gap-2">
+                        <i class="fas fa-receipt"></i> Order Summary
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-gray-500 border-b text-xs uppercase">
+                                <th class="text-left pb-3 font-bold">Product</th>
+                                <th class="text-center pb-3 font-bold">Qty</th>
+                                <th class="text-center pb-3 font-bold">Price</th>
+                                <th class="text-right pb-3 font-bold">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="thankyou-order-rows" class="divide-y divide-gray-50">
+                            <!-- Order rows injected by JS -->
+                        </tbody>
+                    </table>
+                    <div class="border-t-2 border-gray-200 mt-4 pt-4 flex justify-between items-center">
+                        <span class="font-black text-gray-700 text-sm uppercase">Grand Total</span>
+                        <span class="text-2xl font-black text-blue-600">Rs. <span id="thankyou-grand-total"></span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery info card -->
+            <div class="bg-yellow-50 rounded-2xl p-5 mb-6 border border-yellow-200">
+                <div class="flex items-center gap-2 mb-2">
+                    <i class="fas fa-truck text-yellow-600"></i>
+                    <span class="font-bold text-yellow-800 text-sm">Delivery Status</span>
+                </div>
+                <p class="text-yellow-700 text-sm" dir="rtl" style="text-align:right;">آپ کا آرڈر پروسیسنگ میں ہے۔ ہم ۲۴ سے ۴۸ گھنٹوں میں آپ سے رابطہ کریں گے۔</p>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex flex-col gap-3">
+                <a id="thankyou-whatsapp-btn" href="#" target="_blank" class="w-full bg-green-500 text-white py-4 rounded-2xl font-black text-center shadow-lg hover:bg-green-600 transition flex items-center justify-center gap-2">
+                    <i class="fab fa-whatsapp text-xl"></i> Contact on WhatsApp
+                </a>
+                <button onclick="goBackToStoreFresh()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-home mr-2"></i> Continue Shopping
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTIeNfbBp6gk-mtSaPebr-LQoXYG-ue6Hm_6bKS6UyiBzeC4qlajHu-tRHwSORHd9IacbfaKeZPLBS/pub?gid=289036910&single=true&output=csv';
+        const orderAppScriptUrl = 'https://script.google.com/macros/s/AKfycbwKoegwSm9_1ZqZD46RYZYwdepUSAotKMpmoCoOEsUOFRT7S4PdCjUpxQVtcYmBw6JFbA/exec';
+
+        let allProducts = [];
+        let activeCategory = 'All';
+        let currentItem = { name: '', price: 0, qty: 1, images: [], description: '' };
+        
+        let cart = [];
+        let isLoggedIn = localStorage.getItem('ros_logged_in') === 'true';
+        let isAdmin = localStorage.getItem('ros_admin') === 'true';
+        let currentUser = localStorage.getItem('ros_current_user') || 'guest';
+        let currentAuthMode = 'login'; 
+        let selectedProductIndexForEdit = null;
+
+        // Admin layout/display settings
+        let adminProductLayout = 'grid';
+        let adminGridCols = '4';
+        let adminImgSize = 'h-44';
+        let adminCatLayout = 'grid';
+
+        if(!localStorage.getItem('ros_admin_pass')) {
+            localStorage.setItem('ros_admin_pass', 'admin123'); 
+        }
+
+        // Initialize proper isolated user account cart logic
+        loadUserCart();
+
+        function loadStore() {
+            updateCartCounter();
+            checkAuthUIStatus();
+            // Init welcome ticker from localStorage or default
+            renderWelcomeTicker();
+            // Load saved welcome text into admin textarea
+            loadWelcomeTextToAdmin();
+            Papa.parse(sheetUrl, {
+                download: true,
+                header: true,
+                complete: function(results) {
+                    allProducts = results.data.filter(item => item.Name && item.Name.trim() !== "");
+                    document.getElementById('loading').style.display = 'none';
+                    generateCategoryMenuOptions();
+                    renderProducts(allProducts);
+                }
+            });
+        }
+
+        // Isolated Dynamic User Account Cart Engine Logic
+        function loadUserCart() {
+            if (isLoggedIn && currentUser !== 'guest') {
+                let userCarts = JSON.parse(localStorage.getItem('ros_user_carts')) || {};
+                cart = userCarts[currentUser] || [];
+            } else {
+                cart = JSON.parse(localStorage.getItem('ros_guest_cart')) || [];
+            }
+        }
+
+        function saveCart() {
+            if (isLoggedIn && currentUser !== 'guest') {
+                let userCarts = JSON.parse(localStorage.getItem('ros_user_carts')) || {};
+                userCarts[currentUser] = cart;
+                localStorage.setItem('ros_user_carts', JSON.stringify(userCarts));
+            } else {
+                localStorage.setItem('ros_guest_cart', JSON.stringify(cart));
+            }
+            updateCartCounter();
+        }
+
+        function clearCurrentCartData() {
+            cart = [];
+            if (isLoggedIn && currentUser !== 'guest') {
+                let userCarts = JSON.parse(localStorage.getItem('ros_user_carts')) || {};
+                userCarts[currentUser] = [];
+                localStorage.setItem('ros_user_carts', JSON.stringify(userCarts));
+            } else {
+                localStorage.removeItem('ros_guest_cart');
+            }
+            updateCartCounter();
+        }
+
+        // CATEGORY DROPDOWN GENERATOR FUNCTIONS
+        function toggleFilterDropdown() {
+            const menu = document.getElementById('filter-dropdown-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function generateCategoryMenuOptions() {
+            const container = document.getElementById('filter-dropdown-menu');
+            container.innerHTML = `<button onclick="selectCategoryDropdown('All')" class="w-full text-left px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-b border-gray-50 transition">Show All</button>`;
+            const categories = [...new Set(allProducts.map(item => item.Category).filter(c => c))];
+            
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.innerText = cat;
+                btn.className = "w-full text-left px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition truncate block";
+                btn.onclick = () => selectCategoryDropdown(cat);
+                container.appendChild(btn);
+            });
+        }
+
+        function selectCategoryDropdown(cat) {
+            activeCategory = cat;
+            // CHANGE 1: Show/hide the blue dot indicator on compact filter button
+            const dot = document.getElementById('active-filter-dot');
+            if (cat === 'All') {
+                dot.classList.add('hidden');
+            } else {
+                dot.classList.remove('hidden');
+            }
+            document.getElementById('filter-dropdown-menu').classList.add('hidden');
+            filterProducts();
+        }
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('filter-dropdown-menu');
+            if (!e.target.closest('#main-store section')) {
+                if (dropdown) dropdown.classList.add('hidden');
+            }
+        });
+
+        function filterProducts() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allProducts.filter(item => {
+                const mSearch = item.Name.toLowerCase().includes(term);
+                const mCat = activeCategory === 'All' || item.Category === activeCategory;
+                return mSearch && mCat;
+            });
+            renderProducts(filtered);
+        }
+
+        function renderProducts(products) {
+            const container = document.getElementById('product-container');
+            container.innerHTML = '';
+
+            // Apply layout classes
+            const colMap = { '2': 'grid-cols-2', '3': 'grid-cols-2 md:grid-cols-3', '4': 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4' };
+            if (adminProductLayout === 'list') {
+                container.className = 'flex flex-col gap-4';
+            } else {
+                container.className = `grid ${colMap[adminGridCols] || 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'} gap-4 md:gap-8`;
+            }
+
+            // Resolve image size — custom-NNN (px from slider) or legacy tailwind class
+            let imgStyle = '';
+            let imgClass = '';
+            if (adminImgSize && adminImgSize.startsWith('custom-')) {
+                const px = adminImgSize.replace('custom-', '');
+                imgStyle = `style="height:${px}px"`;
+                imgClass = 'w-full object-cover';
+            } else {
+                imgClass = `${adminImgSize || 'h-44'} w-full object-cover`;
+            }
+
+            products.forEach((item, index) => {
+                const mainImg = item.ImageURL.split(',')[0].trim();
+                const itemJson = JSON.stringify(item).replace(/'/g, "\\'");
+                if (adminProductLayout === 'list') {
+                    container.innerHTML += `
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer hover:shadow-md transition relative group flex flex-row items-center gap-4 p-3">
+                            <img src="${mainImg}" class="${imgClass} w-28 rounded-lg flex-shrink-0" ${imgStyle} onclick='openProductDetail(${itemJson})'>
+                            <div class="flex-1 min-w-0" onclick='openProductDetail(${itemJson})'>
+                                <h4 class="font-bold text-sm truncate">${item.Name}</h4>
+                                <div class="text-blue-600 font-bold">Rs. ${item.Price}</div>
+                            </div>
+                            <div class="flex flex-col gap-1.5 flex-shrink-0">
+                                <button onclick='quickAddToCart(${itemJson})' class="bg-orange-500 text-white text-xs font-bold py-2 px-3 rounded-lg hover:bg-orange-600 transition flex items-center gap-1">
+                                    <i class="fas fa-cart-plus text-[10px]"></i> Cart
+                                </button>
+                                <button onclick='quickBuyNow(${itemJson})' class="bg-blue-600 text-white text-xs font-bold py-2 px-3 rounded-lg hover:bg-blue-700 transition">
+                                    Buy Now
+                                </button>
+                            </div>
+                            ${isAdmin ? `<button onclick="loadProductToEditor(${index})" class="absolute top-2 left-2 bg-yellow-500 text-xs font-bold text-slate-900 px-2 py-1 rounded shadow opacity-80 group-hover:opacity-100">Edit</button>` : ''}
+                        </div>`;
+                } else {
+                    container.innerHTML += `
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer hover:shadow-md transition relative group flex flex-col justify-between">
+                            <div onclick='openProductDetail(${itemJson})'>
+                                <img src="${mainImg}" class="${imgClass}" ${imgStyle}>
+                                <div class="p-3">
+                                    <h4 class="font-bold text-sm truncate">${item.Name}</h4>
+                                    <div class="text-blue-600 font-bold">Rs. ${item.Price}</div>
+                                </div>
+                            </div>
+                            <div class="p-2 pt-0 grid grid-cols-2 gap-1.5">
+                                <button onclick='quickAddToCart(${itemJson})' class="bg-orange-500 text-white text-xs font-bold py-2 rounded-lg hover:bg-orange-600 transition flex items-center justify-center gap-1">
+                                    <i class="fas fa-cart-plus text-[10px]"></i> Cart
+                                </button>
+                                <button onclick='quickBuyNow(${itemJson})' class="bg-blue-600 text-white text-xs font-bold py-2 rounded-lg hover:bg-blue-700 transition flex items-center justify-center">
+                                    Buy Now
+                                </button>
+                            </div>
+                            ${isAdmin ? `<button onclick="loadProductToEditor(${index})" class="absolute top-2 left-2 bg-yellow-500 text-xs font-bold text-slate-900 px-2 py-1 rounded shadow opacity-80 group-hover:opacity-100">Edit</button>` : ''}
+                        </div>`;
+                }
+            });
+        }
+
+        function quickAddToCart(item) {
+            const price = parseInt(item.Price.toString().replace(/[^0-9]/g, ''));
+            const mainImg = item.ImageURL.split(',')[0].trim();
+            const existingIndex = cart.findIndex(c => c.name === item.Name);
+            
+            if (existingIndex > -1) {
+                cart[existingIndex].qty += 1;
+            } else {
+                cart.push({
+                    name: item.Name,
+                    price: price,
+                    qty: 1,
+                    image: mainImg
+                });
+            }
+            saveCart();
+            alert(`${item.Name} added to cart!`);
+        }
+
+        // CHANGE 2: quickBuyNow now opens the Product Detail Page instead of going straight to checkout
+        function quickBuyNow(item) {
+            openProductDetail(item);
+        }
+
+        function openProductDetail(item) {
+            const price = parseInt(item.Price.toString().replace(/[^0-9]/g, ''));
+            const images = item.ImageURL.split(',').map(i => i.trim());
+            
+            currentItem = { 
+                name: item.Name, 
+                price: price, 
+                qty: 1, 
+                images: images, 
+                description: item.Description || 'No description available for this product.',
+                // CHANGE 5: Store the admin-set GIF URL if present in product data
+                descGif: item.DescGif ? item.DescGif.trim() : ''
+            };
+
+            document.getElementById('main-store').style.display = 'none';
+            document.getElementById('main-footer').style.display = 'none';
+            document.getElementById('product-detail-page').style.display = 'block';
+            // CHANGE 5: Show fixed bottom bar on detail page
+            document.getElementById('detail-fixed-bottom-bar').style.display = 'block';
+
+            document.getElementById('detail-name').innerText = currentItem.name;
+            document.getElementById('detail-price').innerText = currentItem.price.toLocaleString();
+            document.getElementById('detail-desc').innerText = currentItem.description;
+            document.getElementById('main-view-img').src = currentItem.images[0];
+
+            // CHANGE 5: Populate the fixed bottom bar
+            document.getElementById('fixed-bar-name').innerText = currentItem.name;
+            document.getElementById('fixed-bar-price').innerText = currentItem.price.toLocaleString();
+
+            // CHANGE 5: Show admin-inserted GIF/animated image in description if it exists
+            const gifWrapper = document.getElementById('detail-desc-gif-wrapper');
+            const gifImg = document.getElementById('detail-desc-gif');
+            if (currentItem.descGif && currentItem.descGif !== '') {
+                gifImg.src = currentItem.descGif;
+                gifWrapper.classList.remove('hidden');
+            } else {
+                gifWrapper.classList.add('hidden');
+                gifImg.src = '';
+            }
+            
+            // CHANGE 3: Build thumbnails — click any to replace main image
+            const thumbBox = document.getElementById('thumbnail-container');
+            thumbBox.innerHTML = '';
+            currentItem.images.forEach((img, idx) => {
+                const t = document.createElement('img');
+                t.src = img;
+                t.className = `thumbnail w-20 h-20 object-cover rounded-lg border-2 ${idx===0?'active':''}`;
+                t.onclick = () => {
+                    document.querySelectorAll('.thumbnail').forEach(el => el.classList.remove('active'));
+                    t.classList.add('active');
+                    document.getElementById('main-view-img').src = img;
+                };
+                thumbBox.appendChild(t);
+            });
+
+            updateDetailUI();
+            window.scrollTo(0,0);
+        }
+
+        function backToStore() {
+            document.getElementById('main-store').style.display = 'block';
+            document.getElementById('main-footer').style.display = 'block';
+            document.getElementById('product-detail-page').style.display = 'none';
+            // CHANGE 5: Hide fixed bottom bar when leaving detail page
+            document.getElementById('detail-fixed-bottom-bar').style.display = 'none';
+        }
+
+        function updateQty(val) {
+            currentItem.qty = Math.max(1, currentItem.qty + val);
+            updateDetailUI();
+        }
+
+        function updateDetailUI() {
+            document.getElementById('qty-display').innerText = currentItem.qty;
+            const total = currentItem.price * currentItem.qty;
+            document.getElementById('detail-total-bill').innerText = total.toLocaleString();
+            // CHANGE 5: Keep fixed bottom bar price in sync with qty changes
+            document.getElementById('fixed-bar-price').innerText = currentItem.price.toLocaleString();
+        }
+
+        function goToCheckoutForm() {
+            document.getElementById('product-detail-page').style.display = 'none';
+            // CHANGE 5: Hide fixed bottom bar when entering checkout
+            document.getElementById('detail-fixed-bottom-bar').style.display = 'none';
+            document.getElementById('checkout-form-section').style.display = 'block';
+            
+            const total = currentItem.price * currentItem.qty;
+            document.getElementById('final-summary-text').innerText = `${currentItem.name} (x${currentItem.qty})`;
+            document.getElementById('final-summary-price').innerText = total.toLocaleString();
+            window.scrollTo(0,0);
+        }
+
+        function backToDetails() {
+            document.getElementById('checkout-form-section').style.display = 'none';
+            document.getElementById('product-detail-page').style.display = 'block';
+            // CHANGE 5: Restore fixed bottom bar when coming back to detail
+            document.getElementById('detail-fixed-bottom-bar').style.display = 'block';
+        }
+
+        // AUTHENTICATION — FULL PAGE SYSTEM
+        let signupCurrentStep = 1;
+
+        function openLoginModal() {
+            if (isLoggedIn || isAdmin) {
+                logoutUser();
+            } else {
+                openAuthPage('login');
+            }
+        }
+
+        function openAuthPage(mode) {
+            document.getElementById('auth-page').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            if (mode === 'signup') {
+                switchToSignup();
+            } else {
+                switchToLogin();
+            }
+        }
+
+        function closeAuthPage() {
+            document.getElementById('auth-page').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        function closeLoginModal() { closeAuthPage(); }
+
+        function switchToLogin() {
+            document.getElementById('auth-login-view').style.display = 'block';
+            document.getElementById('auth-signup-view').style.display = 'none';
+            document.getElementById('auth-success-view').style.display = 'none';
+        }
+
+        function switchToSignup() {
+            document.getElementById('auth-login-view').style.display = 'none';
+            document.getElementById('auth-success-view').style.display = 'none';
+            document.getElementById('auth-signup-view').style.display = 'block';
+            signupCurrentStep = 1;
+            showSignupStep(1);
+        }
+
+        function showSignupStep(n) {
+            document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
+            document.getElementById('signup-step-' + n).classList.add('active');
+            document.getElementById('signup-step-label').innerText = `Step ${n} of 3`;
+            for (let i = 1; i <= 3; i++) {
+                const el = document.getElementById('si-' + i);
+                el.className = '';
+                if (i < n) el.classList.add('done');
+                else if (i === n) el.classList.add('active');
+            }
+        }
+
+        function signupNext(step) {
+            if (step === 1) {
+                const id = document.getElementById('su-identifier').value.trim();
+                if (!id) { alert("Please enter your Email, Mobile Number, or Username."); return; }
+                // Use the entered identifier as the username internally
+                const un = id.toLowerCase();
+                if (un === 'admin') { alert("This identifier is reserved. Please choose another."); return; }
+                let accounts = JSON.parse(localStorage.getItem('ros_customers')) || {};
+                if (accounts[un]) { alert("This account already exists. Please log in instead."); return; }
+            } else if (step === 2) {
+                const pw = document.getElementById('su-password').value.trim();
+                if (pw.length < 6) { alert("Password must be at least 6 characters."); return; }
+            }
+            signupCurrentStep = step + 1;
+            showSignupStep(signupCurrentStep);
+        }
+
+        function signupBack(step) {
+            signupCurrentStep = step - 1;
+            showSignupStep(signupCurrentStep);
+        }
+
+        function handleSignupFinal() {
+            const fn = document.getElementById('su-firstname').value.trim();
+            const ln = document.getElementById('su-lastname').value.trim();
+            const dob = document.getElementById('su-dob').value;
+            if (!fn || !ln || !dob) { alert("Please fill in all fields."); return; }
+
+            // Derive username internally from the identifier entered in Step 1
+            const id = document.getElementById('su-identifier').value.trim();
+            const un = id.toLowerCase();
+            const pw = document.getElementById('su-password').value.trim();
+
+            let accounts = JSON.parse(localStorage.getItem('ros_customers')) || {};
+            accounts[un] = pw;
+            // Store extended profile
+            let profiles = JSON.parse(localStorage.getItem('ros_profiles')) || {};
+            profiles[un] = { firstName: fn, lastName: ln, dob: dob, identifier: id };
+            localStorage.setItem('ros_customers', JSON.stringify(accounts));
+            localStorage.setItem('ros_profiles', JSON.stringify(profiles));
+
+            // Auto login
+            isLoggedIn = true; isAdmin = false; currentUser = un;
+            localStorage.setItem('ros_logged_in', 'true');
+            localStorage.setItem('ros_admin', 'false');
+            localStorage.setItem('ros_current_user', un);
+            loadUserCart();
+            checkAuthUIStatus();
+            renderProducts(allProducts);
+
+            // Show success
+            document.getElementById('auth-login-view').style.display = 'none';
+            document.getElementById('auth-signup-view').style.display = 'none';
+            document.getElementById('auth-success-view').style.display = 'block';
+            document.getElementById('auth-success-msg').innerText = `Welcome, ${fn}! Your account is ready.`;
+        }
+
+        function handleLoginSubmit() {
+            const id = document.getElementById('loginIdentifier').value.trim().toLowerCase();
+            const pw = document.getElementById('loginPass').value.trim();
+            const storedAdminPass = localStorage.getItem('ros_admin_pass');
+
+            if (!id || !pw) { alert("Please fill in all fields."); return; }
+
+            if (id === 'admin' && pw === storedAdminPass) {
+                isAdmin = true; isLoggedIn = false; currentUser = 'admin';
+                localStorage.setItem('ros_admin', 'true');
+                localStorage.setItem('ros_logged_in', 'false');
+                localStorage.setItem('ros_current_user', 'admin');
+                closeAuthPage();
+                loadUserCart(); checkAuthUIStatus(); renderProducts(allProducts);
+                return;
+            }
+
+            let accounts = JSON.parse(localStorage.getItem('ros_customers')) || {};
+            if (accounts[id] && accounts[id] === pw) {
+                isLoggedIn = true; isAdmin = false; currentUser = id;
+                localStorage.setItem('ros_logged_in', 'true');
+                localStorage.setItem('ros_admin', 'false');
+                localStorage.setItem('ros_current_user', id);
+                closeAuthPage();
+                loadUserCart(); checkAuthUIStatus(); renderProducts(allProducts);
+            } else {
+                alert("Invalid credentials. Please try again.");
+            }
+        }
+
+        function togglePassVis(inputId, btn) {
+            const inp = document.getElementById(inputId);
+            if (inp.type === 'password') {
+                inp.type = 'text';
+                btn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+            } else {
+                inp.type = 'password';
+                btn.innerHTML = '<i class="fas fa-eye"></i>';
+            }
+        }
+
+        // Keep legacy stubs to avoid breaking any remaining references
+        function toggleAuthMode() { switchToSignup(); }
+        function handleAuthSubmit() { handleLoginSubmit(); }
+        function updateAuthModalUI() {}
+
+        function handleForgotPassword() {
+            const user = prompt("Enter your username to reset password:").trim().toLowerCase();
+            if (!user) return;
+
+            if (user === 'admin') {
+                const securityCode = prompt("Enter Master Admin Recovery Code to proceed:");
+                if (securityCode === "ROS2026") { 
+                    const newAdminPass = prompt("Enter new Admin Password:");
+                    if (newAdminPass) {
+                        localStorage.setItem('ros_admin_pass', newAdminPass);
+                        alert("Admin password updated successfully!");
+                    }
+                } else {
+                    alert("Incorrect Recovery Code!");
+                }
+                return;
+            }
+
+            let customerAccounts = JSON.parse(localStorage.getItem('ros_customers')) || {};
+            if (customerAccounts[user]) {
+                const newPass = prompt(`Enter new password for account [ ${user} ] :`);
+                if (newPass) {
+                    customerAccounts[user] = newPass;
+                    localStorage.setItem('ros_customers', JSON.stringify(customerAccounts));
+                    alert("Password updated successfully! Please login with your new password.");
+                }
+            } else {
+                alert("Username not found in storage record database.");
+            }
+        }
+
+        function logoutUser() {
+            isLoggedIn = false;
+            isAdmin = false;
+            currentUser = 'guest';
+            localStorage.setItem('ros_logged_in', 'false');
+            localStorage.setItem('ros_admin', 'false');
+            localStorage.setItem('ros_current_user', 'guest');
+            alert("Logged out successfully.");
+            loadUserCart();
+            checkAuthUIStatus();
+            renderProducts(allProducts);
+        }
+
+        function checkAuthUIStatus() {
+            const authBtn = document.getElementById('auth-btn');
+            if (isAdmin) {
+                authBtn.innerHTML = '<i class="fas fa-sign-out-alt mr-1"></i> Exit Admin';
+                authBtn.className = "bg-yellow-500 text-slate-900 px-4 py-2 rounded-full hover:bg-yellow-600 transition text-sm font-bold shadow-md";
+                document.getElementById('admin-panel').style.display = 'block';
+                loadWelcomeTextToAdmin();
+            } else if (isLoggedIn) {
+                authBtn.innerHTML = `<i class="fas fa-user-check mr-1"></i> ${currentUser}`;
+                authBtn.className = "bg-green-600 text-white px-4 py-2 rounded-full hover:bg-red-500 transition text-sm font-bold shadow-md";
+                document.getElementById('admin-panel').style.display = 'none';
+            } else {
+                authBtn.innerHTML = '<i class="fas fa-user mr-1"></i> Login';
+                authBtn.className = "bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition text-sm font-bold shadow-md";
+                document.getElementById('admin-panel').style.display = 'none';
+            }
+        }
+
+        function logoutAdmin() { logoutUser(); }
+
+        // CART SYSTEM FUNCTIONS
+        function toggleCart() {
+            const cartModal = document.getElementById('cart-modal');
+            cartModal.style.display = cartModal.style.display === 'flex' ? 'none' : 'flex';
+            if (cartModal.style.display === 'flex') renderCartItems();
+        }
+
+        function addToCartCurrent() {
+            const existingIndex = cart.findIndex(item => item.name === currentItem.name);
+            if (existingIndex > -1) {
+                cart[existingIndex].qty += currentItem.qty;
+            } else {
+                cart.push({
+                    name: currentItem.name,
+                    price: currentItem.price,
+                    qty: currentItem.qty,
+                    image: currentItem.images[0]
+                });
+            }
+            saveCart();
+            alert(`${currentItem.name} added to cart!`);
+            backToStore();
+        }
+
+        function updateCartCounter() {
+            const count = cart.reduce((acc, curr) => acc + curr.qty, 0);
+            document.getElementById('cart-count').innerText = count;
+        }
+
+        function renderCartItems() {
+            const container = document.getElementById('cart-items-container');
+            const totalDisplay = document.getElementById('cart-total-price');
+            container.innerHTML = '';
+            
+            if (cart.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-400 py-8">Your cart is empty.</p>';
+                totalDisplay.innerText = '0';
+                return;
+            }
+
+            let grandTotal = 0;
+            cart.forEach((item, idx) => {
+                const totalItemPrice = item.price * item.qty;
+                grandTotal += totalItemPrice;
+                container.innerHTML += `
+                    <div class="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                        <img src="${item.image}" class="w-16 h-16 object-cover rounded-lg">
+                        <div class="flex-1 min-w-0">
+                            <h5 class="font-bold text-sm text-gray-800 truncate">${item.name}</h5>
+                            <p class="text-xs text-gray-500">Rs. ${item.price.toLocaleString()} x ${item.qty}</p>
+                            <p class="text-xs font-black text-blue-600 mt-0.5">Rs. ${totalItemPrice.toLocaleString()}</p>
+                        </div>
+                        <button onclick="removeFromCart(${idx})" class="text-gray-300 hover:text-red-500 transition px-2 text-lg">&times;</button>
+                    </div>`;
+            });
+            totalDisplay.innerText = grandTotal.toLocaleString();
+        }
+
+        function removeFromCart(idx) {
+            cart.splice(idx, 1);
+            saveCart();
+            renderCartItems();
+        }
+
+        function checkoutCart() {
+            if (cart.length === 0) {
+                alert("Cart is empty!");
+                return;
+            }
+            toggleCart();
+            
+            currentItem = {
+                name: "Multi-Cart Order",
+                price: cart.reduce((acc, curr) => acc + (curr.price * curr.qty), 0),
+                qty: 1,
+                images: [cart[0].image],
+                description: cart.map(i => `${i.name} (x${i.qty})`).join(', ')
+            };
+            
+            document.getElementById('main-store').style.display = 'none';
+            document.getElementById('checkout-form-section').style.display = 'block';
+            
+            document.getElementById('final-summary-text').innerText = "Cart Items Total Bundle";
+            document.getElementById('final-summary-price').innerText = currentItem.price.toLocaleString();
+        }
+
+        // NEWSLETTER NEWS SUBSCRIPTION ENGINE LOGIC
+        function handleSubscriptionSecure() {
+            const emailInput = document.getElementById('subscriberEmail');
+            const emailValue = emailInput.value.trim();
+            if(!emailValue || !emailValue.includes('@')) {
+                alert("Please type a valid structured email address arrangement!");
+                return;
+            }
+            alert(`Thank you! [ ${emailValue} ] has been securely subscribed for exclusive tech drops updates.`);
+            emailInput.value = "";
+        }
+
+        // ADMIN CONTENT MANAGEMENT OVERRIDES
+        function applyStoreSettings() {
+            const sName = document.getElementById('adminStoreName').value;
+            const sPhone = document.getElementById('adminWhatsapp').value;
+            const sBg = document.getElementById('adminBgUrl').value;
+            const sNewPass = document.getElementById('adminNewPass').value.trim();
+            const sLogoUrl = document.getElementById('adminLogoUrl').value.trim();
+            const sSiteTitle = document.getElementById('adminSiteTitle').value.trim();
+            const sBanner = document.getElementById('adminBannerUrl').value.trim();
+            const sFooter = document.getElementById('adminFooterText').value.trim();
+            const sLayout = document.getElementById('adminProductLayout').value;
+            const sCols = document.getElementById('adminGridCols').value;
+            const sCatLayout = document.getElementById('adminCatLayout').value;
+
+            if(sNewPass !== "") {
+                localStorage.setItem('ros_admin_pass', sNewPass);
+                document.getElementById('adminNewPass').value = "";
+            }
+
+            document.getElementById('nav-store-name').innerText = sName;
+            document.getElementById('footer-store-name').innerText = sName;
+            document.title = sSiteTitle || (sName + " | Quality Gadgets");
+
+            // Logo
+            if (sLogoUrl) {
+                document.getElementById('nav-logo-img').src = sLogoUrl;
+                document.getElementById('fixed-background-poster').style.backgroundImage = `url('${sLogoUrl}')`;
+                const authLogo = document.getElementById('auth-logo');
+                if (authLogo) authLogo.src = sLogoUrl;
+            }
+
+            // Background poster
+            if (sBg) document.getElementById('fixed-background-poster').style.backgroundImage = `url('${sBg}')`;
+
+            // Banner
+            const bannerSection = document.getElementById('store-banner-section');
+            if (sBanner) {
+                document.getElementById('store-banner-img').src = sBanner;
+                bannerSection.classList.remove('hidden');
+            } else {
+                bannerSection.classList.add('hidden');
+            }
+
+            // Footer text
+            const footerCopy = document.querySelector('#main-footer .text-gray-500.text-xs');
+            if (footerCopy && sFooter) footerCopy.innerText = sFooter;
+
+            // WhatsApp
+            document.getElementById('fixed-whatsapp-link').href = "https://wa.me/" + sPhone;
+            document.getElementById('footer-whatsapp').innerText = sPhone;
+
+            // Auth brand name
+            const authBrand = document.getElementById('auth-brand-name');
+            if (authBrand) authBrand.innerText = sName;
+
+            // Product layout & image size
+            adminProductLayout = sLayout;
+            adminGridCols = sCols;
+            adminCatLayout = sCatLayout;
+            renderProducts(allProducts);
+
+            alert("Settings updated successfully!");
+        }
+
+        function loadProductToEditor(index) {
+            selectedProductIndexForEdit = index;
+            const prod = allProducts[index];
+            document.getElementById('editProdName').value = prod.Name;
+            document.getElementById('editProdPrice').value = parseInt(prod.Price.toString().replace(/[^0-9]/g, ''));
+            document.getElementById('editProdCat').value = prod.Category || 'All';
+            document.getElementById('editProdImg').value = prod.ImageURL.split(',')[0].trim();
+            // CHANGE 5: Load the DescGif field if it exists
+            document.getElementById('editProdDescGif').value = prod.DescGif || '';
+            
+            document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function saveProductEdits() {
+            if (selectedProductIndexForEdit === null) {
+                alert("Please click 'Edit' button on any product card above first.");
+                return;
+            }
+            allProducts[selectedProductIndexForEdit].Name = document.getElementById('editProdName').value;
+            allProducts[selectedProductIndexForEdit].Price = document.getElementById('editProdPrice').value;
+            allProducts[selectedProductIndexForEdit].Category = document.getElementById('editProdCat').value;
+            allProducts[selectedProductIndexForEdit].ImageURL = document.getElementById('editProdImg').value;
+            // CHANGE 5: Save the admin-set GIF URL into the product data
+            allProducts[selectedProductIndexForEdit].DescGif = document.getElementById('editProdDescGif').value.trim();
+            
+            alert("Product adjusted inside live view memory cache arrangement successfully!");
+            generateCategoryMenuOptions();
+            renderProducts(allProducts);
+        }
+
+        // CHANGE 8: Show professional Urdu Thank You page after order submission
+        function showThankYouPage() {
+            const totalAmount = currentItem.price * currentItem.qty;
+            
+            // Build order rows for the summary table
+            let rowsHtml = '';
+            let grandTotal = 0;
+
+            if (currentItem.name === "Multi-Cart Order") {
+                // Cart checkout: show each cart item
+                cart.forEach(item => {
+                    const itemTotal = item.price * item.qty;
+                    grandTotal += itemTotal;
+                    rowsHtml += `
+                        <tr>
+                            <td class="py-3 text-gray-800 font-semibold text-xs pr-2">${item.name}</td>
+                            <td class="py-3 text-center text-gray-600 text-xs">${item.qty}</td>
+                            <td class="py-3 text-center text-gray-600 text-xs">Rs. ${item.price.toLocaleString()}</td>
+                            <td class="py-3 text-right font-bold text-blue-700 text-xs">Rs. ${itemTotal.toLocaleString()}</td>
+                        </tr>`;
+                });
+            } else {
+                // Single product order
+                grandTotal = totalAmount;
+                rowsHtml = `
+                    <tr>
+                        <td class="py-3 text-gray-800 font-semibold text-xs pr-2">${currentItem.name}</td>
+                        <td class="py-3 text-center text-gray-600 text-xs">${currentItem.qty}</td>
+                        <td class="py-3 text-center text-gray-600 text-xs">Rs. ${currentItem.price.toLocaleString()}</td>
+                        <td class="py-3 text-right font-bold text-blue-700 text-xs">Rs. ${grandTotal.toLocaleString()}</td>
+                    </tr>`;
+            }
+
+            document.getElementById('thankyou-order-rows').innerHTML = rowsHtml;
+            document.getElementById('thankyou-grand-total').innerText = grandTotal.toLocaleString();
+
+            // Set WhatsApp button link
+            const waLink = document.getElementById('fixed-whatsapp-link').href;
+            document.getElementById('thankyou-whatsapp-btn').href = waLink;
+
+            // Hide checkout, show thank you page
+            document.getElementById('checkout-form-section').style.display = 'none';
+            document.getElementById('thankyou-page').style.display = 'block';
+            window.scrollTo(0, 0);
+
+            // Clear cart after order
+            clearCurrentCartData();
+        }
+
+        function goBackToStoreFresh() {
+            document.getElementById('thankyou-page').style.display = 'none';
+            document.getElementById('main-store').style.display = 'block';
+            document.getElementById('main-footer').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+        // FORM SUBMISSION
+        document.getElementById('finalOrderForm').onsubmit = function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.innerText = "Submitting Order...";
+            btn.disabled = true;
+
+            const totalAmount = currentItem.price * currentItem.qty;
+            const custNameVal = document.getElementById('custName').value.trim();
+            const custCityVal = document.getElementById('custCity').value.trim();
+            const orderQty = currentItem.name === "Multi-Cart Order"
+                ? cart.reduce((acc, i) => acc + i.qty, 0)
+                : currentItem.qty;
+            const customerIdentity = `${custNameVal} | Qty: ${orderQty} | Total: ${totalAmount} PKR`;
+
+            const formData = {
+                product: currentItem.name,
+                name: customerIdentity,
+                phone: document.getElementById('custPhone').value,
+                city: custCityVal,
+                address: document.getElementById('custAddress').value,
+                price: totalAmount,
+                total: totalAmount
+            };
+
+            fetch(orderAppScriptUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(formData)
+            }).then(() => {
+                // CHANGE 8: Show professional Urdu Thank You page instead of alert + reload
+                btn.disabled = false;
+                btn.innerText = "CONFIRM ORDER NOW";
+                document.getElementById('finalOrderForm').reset();
+                showThankYouPage();
+            }).catch(() => {
+                alert("Error! Please try again or use WhatsApp.");
+                btn.disabled = false;
+                btn.innerText = "CONFIRM ORDER NOW";
+            });
+        };
+
+        // TASK 3: Safe page content editor
+        function applyPageContentSettings() {
+            const detailHeading = document.getElementById('adminDetailHeading').value.trim();
+            const qtyLabel = document.getElementById('adminQtyLabel').value.trim();
+            const formHeading = document.getElementById('adminFormHeading').value.trim();
+            const submitBtnText = document.getElementById('adminSubmitBtnText').value.trim();
+
+            // Product Detail page — description heading
+            const descHeadingEl = document.querySelector('#product-detail-page .bg-white.border.rounded-2xl h4');
+            if (descHeadingEl && detailHeading) {
+                descHeadingEl.innerHTML = `<i class="fas fa-info-circle text-blue-500 mr-2"></i>${detailHeading}`;
+            }
+
+            // Product Detail page — qty label
+            const qtyLabelEl = document.querySelector('#product-detail-page h4.text-xs.font-bold.text-gray-500');
+            if (qtyLabelEl && qtyLabel) qtyLabelEl.innerText = qtyLabel;
+
+            // Order form heading
+            const formHeadingEl = document.querySelector('#checkout-form-section h2');
+            if (formHeadingEl && formHeading) formHeadingEl.innerText = formHeading;
+
+            // Submit button text (only when not submitting)
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn && submitBtnText && !submitBtn.disabled) submitBtn.innerText = submitBtnText;
+
+            alert("Page content updated successfully!");
+        }
+
+        // ===== TASK 1: CUSTOM SIZE CONTROLS =====
+
+        // Sync slider ↔ number input
+        function syncSizeControl(sourceId, targetId) {
+            const val = document.getElementById(sourceId).value;
+            document.getElementById(targetId).value = val;
+        }
+
+        // Product image size — live apply (px-based, replaces adminImgSize string approach)
+        function applyImgSizeLive() {
+            const px = parseInt(document.getElementById('adminImgSizeSlider').value) || 176;
+            adminImgSize = 'custom-' + px;
+            renderProducts(allProducts);
+        }
+
+        // Logo size — live apply
+        function applyLogoSizeLive() {
+            const px = parseInt(document.getElementById('adminLogoSizeSlider').value) || 40;
+            const logo = document.getElementById('nav-logo-img');
+            if (logo) { logo.style.width = px + 'px'; logo.style.height = px + 'px'; }
+        }
+
+        // Background image size — live apply
+        function applyBgSizeLive() {
+            const pct = parseInt(document.getElementById('adminBgSizeSlider').value) || 50;
+            document.getElementById('adminBgSizeVal').innerText = pct;
+            document.getElementById('fixed-background-poster').style.backgroundSize = pct + '%';
+        }
+
+        // ===== TASK 2 & 3: WELCOME TICKER =====
+
+        const DEFAULT_WELCOME_LINES = [
+            "ہمارے سٹور پر خوش آمدید ❤️",
+            "آپ کا اعتماد ہماری پہچان ہے 🤝",
+            "بہترین کوالٹی، مناسب قیمت 💎",
+            "آج ہی آرڈر کریں اور فرق محسوس کریں 🚀",
+            "آپ کی تسلی ہماری کامیابی ہے 🌟",
+            "تیز ترین ڈیلیوری، قابل اعتماد سروس 📦",
+            "ہر پروڈکٹ پر معیار کی ضمانت ✅",
+            "آپ کے لیے بہترین آفرز ہر روز 🎁"
+        ];
+
+        function getWelcomeLines() {
+            const saved = localStorage.getItem('ros_welcome_text');
+            if (saved && saved.trim()) {
+                // Support both newline and | separator
+                const lines = saved.split(/\n|\|/).map(l => l.trim()).filter(l => l.length > 0);
+                if (lines.length > 0) return lines;
+            }
+            return DEFAULT_WELCOME_LINES;
+        }
+
+        function renderWelcomeTicker() {
+            const lines = getWelcomeLines();
+            const track = document.getElementById('welcome-ticker-track');
+            if (!track) return;
+
+            // Build HTML — double the items for seamless infinite scroll
+            let html = '';
+            const buildItems = () => lines.map(line =>
+                `<span class="ticker-item">${line}</span><span class="ticker-sep">✦</span>`
+            ).join('');
+
+            html = buildItems() + buildItems(); // doubled
+            track.innerHTML = html;
+        }
+
+        function saveWelcomeText() {
+            const text = document.getElementById('adminWelcomeText').value.trim();
+            if (text) {
+                localStorage.setItem('ros_welcome_text', text);
+            } else {
+                localStorage.removeItem('ros_welcome_text');
+            }
+            renderWelcomeTicker();
+            alert("خوش آمدید متن محفوظ ہو گیا! ✅");
+        }
+
+        function loadWelcomeTextToAdmin() {
+            const saved = localStorage.getItem('ros_welcome_text');
+            const ta = document.getElementById('adminWelcomeText');
+            if (ta && saved) ta.value = saved;
+        }
+
+        loadStore();
+    </script>
+</body>
+</html>
